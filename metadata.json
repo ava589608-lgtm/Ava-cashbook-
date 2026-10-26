@@ -1,0 +1,6 @@
+{
+  "name": "AVA Cash",
+  "description": "Professional cash book, voucher manager, cheque reconciliation, and fleet expense tracking for AVA Passengers Transport LLC.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

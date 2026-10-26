@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasValidTimestamps() {
+      return (!('createdAt' in request.resource.data) || request.resource.data.createdAt is timestamp)
+          && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+    }
+
+    function isValidTransaction(data, userId) {
+      return data.userId == userId
+          && data.date is string && data.date.size() >= 10
+          && data.account in ['Bank', 'Petty']
+          && data.type in ['in', 'out', 'xfer']
+          && data.amount is number && data.amount >= 0
+          && data.desc is string && data.desc.size() > 0
+          && (!('vat' in data) || data.vat is number)
+          && (!('party' in data) || data.party is string)
+          && (!('category' in data) || data.category is string)
+          && (!('subcategory' in data) || data.subcategory is string)
+          && (!('vehicle' in data) || data.vehicle is string)
+          && (!('ref' in data) || data.ref is string)
+          && (!('chequeNo' in data) || data.chequeNo is string)
+          && (!('clearedOn' in data) || data.clearedOn is string)
+          && (!('voucherLines' in data) || data.voucherLines is string)
+          && (!('receiptUrl' in data) || data.receiptUrl is string)
+          && (!('enteredBy' in data) || data.enteredBy is string)
+          && (!('deleted' in data) || data.deleted is bool);
+    }
+
+    function isValidVehicle(data, userId) {
+      return data.userId == userId
+          && data.plate is string && data.plate.size() > 0
+          && (!('owner' in data) || data.owner is string)
+          && (!('vtype' in data) || data.vtype is string)
+          && (!('model' in data) || data.model is string)
+          && (!('seats' in data) || data.seats is int || data.seats is number)
+          && (!('reg' in data) || data.reg is string)
+          && (!('ins' in data) || data.ins is string);
+    }
+
+    function isValidCompanySettings(data, userId) {
+      return data.userId == userId
+          && (!('companyName' in data) || data.companyName is string)
+          && (!('companyAddress' in data) || data.companyAddress is string)
+          && (!('bankOpeningBalance' in data) || data.bankOpeningBalance is number)
+          && (!('pettyOpeningBalance' in data) || data.pettyOpeningBalance is number)
+          && (!('lockDate' in data) || data.lockDate is string)
+          && (!('role' in data) || data.role in ['Admin', 'Check', 'Staff']);
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+
+      match /transactions/{transactionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+                      && isValidTransaction(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow update: if isOwner(userId)
+                      && isValidTransaction(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow delete: if isOwner(userId);
+      }
+
+      match /vehicles/{vehicleId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+                      && isValidVehicle(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow update: if isOwner(userId)
+                      && isValidVehicle(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow delete: if isOwner(userId);
+      }
+
+      match /settings/{settingsId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+                      && isValidCompanySettings(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow update: if isOwner(userId)
+                      && isValidCompanySettings(request.resource.data, userId)
+                      && hasValidTimestamps();
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

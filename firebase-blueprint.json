@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Cash or bank transaction record for AVA Cash Book",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string", "description": "YYYY-MM-DD" },
+        "account": { "type": "string", "enum": ["Bank", "Petty"] },
+        "type": { "type": "string", "enum": ["in", "out", "xfer"] },
+        "amount": { "type": "number", "description": "Transaction amount in AED" },
+        "vat": { "type": "number", "description": "VAT amount in AED" },
+        "desc": { "type": "string" },
+        "party": { "type": "string" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "vehicle": { "type": "string" },
+        "ref": { "type": "string" },
+        "chequeNo": { "type": "string" },
+        "clearedOn": { "type": "string" },
+        "voucherLines": { "type": "string" },
+        "receiptUrl": { "type": "string" },
+        "enteredBy": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "account", "type", "amount", "desc"]
+    },
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "Fleet vehicle registered in AVA system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "plate": { "type": "string" },
+        "owner": { "type": "string" },
+        "vtype": { "type": "string" },
+        "model": { "type": "string" },
+        "seats": { "type": "integer" },
+        "reg": { "type": "string", "description": "Registration expiry YYYY-MM-DD" },
+        "ins": { "type": "string", "description": "Insurance expiry YYYY-MM-DD" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "plate"]
+    },
+    "CompanySettings": {
+      "title": "CompanySettings",
+      "description": "User business configuration and preferences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "companyAddress": { "type": "string" },
+        "bankOpeningBalance": { "type": "number" },
+        "pettyOpeningBalance": { "type": "number" },
+        "lockDate": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Check", "Staff"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "User transactions in cash book"
+    },
+    "/users/{userId}/vehicles/{vehicleId}": {
+      "schema": "Vehicle",
+      "description": "User fleet vehicles"
+    },
+    "/users/{userId}/settings/{settingsId}": {
+      "schema": "CompanySettings",
+      "description": "User company settings"
+    }
+  }
+}
